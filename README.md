@@ -4,6 +4,10 @@
 
 [![CI](https://github.com/aahanaahir22/opsassist-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/aahanaahir22/opsassist-ai/actions/workflows/ci.yml)
 
+## [Launch the public interactive demo →](https://opsassist-ai-demo.aahanaahir12.chatgpt.site)
+
+The browser demo reproduces the safe incident workflow without requiring a local setup or production credentials: inspect FAISS evidence, approve the proposed action, execute the controlled simulator, verify observed recovery metrics, and review the resulting audit trail.
+
 OpsAssist AI turns fragmented operational signals into a traceable incident decision. It groups related telemetry, retrieves approved runbook evidence with FAISS, produces a typed diagnosis and action plan, enforces a human approval gate for sensitive actions, simulates least-privilege execution, verifies observed state, and records the full audit trail.
 
 > **Portfolio prototype:** all included incidents, metrics, identities, systems, and execution results are simulated. The executor never connects to production infrastructure.
