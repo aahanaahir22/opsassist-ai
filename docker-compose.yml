@@ -1,0 +1,31 @@
+services:
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: opsassist
+      POSTGRES_USER: opsassist
+      POSTGRES_PASSWORD: opsassist_local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opsassist"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - opsassist_pg:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    environment:
+      OPSASSIST_DATABASE_URL: postgresql+psycopg://opsassist:opsassist_local@database:5432/opsassist
+      OPSASSIST_CORS_ORIGINS: http://localhost:8080
+      OPSASSIST_SEED_DEMO: "true"
+    depends_on:
+      database:
+        condition: service_healthy
+    ports: ["8000:8000"]
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports: ["8080:80"]
+volumes:
+  opsassist_pg:
+
