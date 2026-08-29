@@ -4,7 +4,9 @@ import { expect, test } from "@playwright/test";
 test("launch → investigate → simulate → approve → execute → verify", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: /Launch guided incident/i }).click();
+  await page.getByRole("tab", { name: /^Incident$/i }).click();
   await expect(page.getByText(/Root-cause hypotheses/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /Re-run investigation/i })).toBeVisible({ timeout: 10_000 });
   await page.getByRole("tab", { name: /Digital twin/i }).click();
   await page.getByRole("button", { name: /Simulate action/i }).click();
   await page.getByRole("button", { name: /Review & approve/i }).click();
@@ -17,6 +19,7 @@ test("launch → investigate → simulate → approve → execute → verify", a
 
 test("critical accessibility rules pass", async ({ page }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: /Enter Ops Universe/i }).click();
   const results = await new AxeBuilder({ page }).analyze();
   const severe = results.violations.filter((item) => item.impact === "critical" || item.impact === "serious");
   expect(severe).toEqual([]);

@@ -327,6 +327,9 @@ body {
 .ops-shell p { color: #715d82; }
 .ops-shell h1, .ops-shell h2, .ops-shell h3, .ops-shell strong { color: #2a103e; }
 .ops-shell code { color: #6e27cf; }
+.ops-shell .coral { color: #b51248 !important; }
+.ops-shell .amber { color: #874000 !important; }
+.ops-shell .violet { color: #5c1daf !important; }
 
 .glass-panel {
   overflow: visible;

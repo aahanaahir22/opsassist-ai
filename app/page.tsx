@@ -1459,14 +1459,20 @@ function OpsAssistApp() {
                 title="Incident Time Machine"
                 action={
                   <div className="playback-controls">
-                    <button onClick={() => setPlaying(!playing)}>
+                    <button
+                      onClick={() => setPlaying(!playing)}
+                      aria-label={playing ? "Pause incident replay" : "Play incident replay"}
+                    >
                       {playing ? <Pause /> : <Play />}
                     </button>
                     <Select
                       value={String(playbackSpeed)}
                       onValueChange={(value) => setPlaybackSpeed(Number(value))}
                     >
-                      <SelectTrigger className="speed-trigger">
+                      <SelectTrigger
+                        className="speed-trigger"
+                        aria-label="Playback speed"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1585,7 +1591,10 @@ function OpsAssistApp() {
                     value={detectionMethod}
                     onValueChange={setDetectionMethod}
                   >
-                    <SelectTrigger className="wide-select">
+                    <SelectTrigger
+                      className="wide-select"
+                      aria-label="Detection strategy"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
