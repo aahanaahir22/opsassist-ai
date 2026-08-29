@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from _bootstrap import ROOT  # noqa: F401
+from _bootstrap import ROOT
 from app.services.retrieval import RetrievalService, load_markdown_documents
 
 

@@ -8,7 +8,6 @@ from uuid import uuid4
 from app.core.errors import PolicyError
 from app.schemas.models import ActionRequest, ActionType, ApprovalRecord
 
-
 CLASSIFICATION = {
     ActionType.RESTART: "sensitive",
     ActionType.SCALE: "safe",
@@ -46,7 +45,7 @@ class PolicyEngine:
         if "sensitive" not in ROLE_PERMISSIONS.get(actor_role, set()):
             raise PolicyError("POLICY_APPROVAL_REQUIRED", "Incident Commander approval is required.", 403)
         approved_at = datetime.now(UTC)
-        payload = f"{simulation_id}:{actor_id}:{actor_role}:{approved_at.isoformat()}"
+        payload = self._approval_payload(simulation_id, actor_id, actor_role, approved_at)
         signature = hmac.new(self.signing_key, payload.encode(), hashlib.sha256).hexdigest()
         return ApprovalRecord(
             id=f"apr_{uuid4().hex[:12]}",
@@ -56,3 +55,14 @@ class PolicyEngine:
             approved_at=approved_at,
             signature=signature,
         )
+
+    def verify_approval(self, record: ApprovalRecord) -> bool:
+        payload = self._approval_payload(record.simulation_id, record.actor_id, record.actor_role, record.approved_at)
+        expected = hmac.new(self.signing_key, payload.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, record.signature)
+
+    @staticmethod
+    def _approval_payload(simulation_id: str, actor_id: str, actor_role: str, approved_at: datetime) -> str:
+        canonical = approved_at.replace(tzinfo=UTC) if approved_at.tzinfo is None else approved_at.astimezone(UTC)
+        timestamp = canonical.replace(tzinfo=None).isoformat(timespec="microseconds")
+        return f"{simulation_id}:{actor_id}:{actor_role}:{timestamp}"

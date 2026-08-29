@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from app.schemas.models import RankedHypothesis, RankingComponents
 
-
 DEFAULT_WEIGHTS = {
     "temporal_precedence": 0.15,
     "anomaly_severity": 0.15,

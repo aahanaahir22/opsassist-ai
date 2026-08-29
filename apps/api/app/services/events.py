@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 
 from app.schemas.models import EventMessage
 
@@ -12,7 +12,8 @@ class EventBroker:
         self.connections: dict[str, set[WebSocket]] = defaultdict(set)
 
     async def connect(self, incident_id: str, socket: WebSocket) -> None:
-        await socket.accept()
+        offered = socket.headers.get("sec-websocket-protocol", "")
+        await socket.accept(subprotocol="opsassist" if "opsassist" in offered else None)
         self.connections[incident_id].add(socket)
 
     def disconnect(self, incident_id: str, socket: WebSocket) -> None:
@@ -24,7 +25,7 @@ class EventBroker:
         for socket in self.connections[incident_id]:
             try:
                 await socket.send_json(event.model_dump(mode="json"))
-            except Exception:
+            except (WebSocketDisconnect, RuntimeError, OSError):
                 stale.append(socket)
         for socket in stale:
             self.disconnect(incident_id, socket)

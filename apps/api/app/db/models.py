@@ -3,7 +3,18 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -35,6 +46,7 @@ class Role(Base):
 class Service(Base, TimestampMixin):
     __tablename__ = "services"
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     name: Mapped[str] = mapped_column(String(160))
     synthetic: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -51,6 +63,7 @@ class Dependency(Base):
 class TelemetryEvent(Base):
     __tablename__ = "telemetry_events"
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: new_id("tel"))
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     event_type: Mapped[str] = mapped_column(String(32), index=True)
     service_id: Mapped[str] = mapped_column(ForeignKey("services.id"), index=True)
     trace_id: Mapped[str | None] = mapped_column(String(128), index=True)
@@ -104,6 +117,7 @@ class Alert(Base, TimestampMixin):
 class Incident(Base, TimestampMixin):
     __tablename__ = "incidents"
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: new_id("inc"))
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     scenario_id: Mapped[str] = mapped_column(String(120), index=True)
     title: Mapped[str] = mapped_column(String(240))
     status: Mapped[str] = mapped_column(String(40), index=True, default="OPEN")
@@ -146,6 +160,7 @@ class Runbook(Base, TimestampMixin):
     __tablename__ = "runbooks"
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     version: Mapped[str] = mapped_column(String(40), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     title: Mapped[str] = mapped_column(String(240))
     content: Mapped[str] = mapped_column(Text)
     trust_level: Mapped[str] = mapped_column(String(40), index=True)
@@ -154,6 +169,7 @@ class Runbook(Base, TimestampMixin):
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
     id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     document_id: Mapped[str] = mapped_column(String(80), index=True)
     document_version: Mapped[str] = mapped_column(String(40))
     section: Mapped[str] = mapped_column(String(80))
@@ -210,6 +226,7 @@ class Verification(Base, IncidentChildMixin):
 class AuditEvent(Base):
     __tablename__ = "audit_events"
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: new_id("aud"))
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), index=True)
     event_type: Mapped[str] = mapped_column(String(80), index=True)
     actor: Mapped[str] = mapped_column(String(120))
@@ -227,6 +244,7 @@ class Postmortem(Base, IncidentChildMixin):
 class EvaluationRun(Base, TimestampMixin):
     __tablename__ = "evaluation_runs"
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: new_id("eval"))
+    tenant_id: Mapped[str] = mapped_column(String(120), index=True, default="demo")
     dataset_version: Mapped[str] = mapped_column(String(40), index=True)
     seed: Mapped[int] = mapped_column(Integer)
     git_commit: Mapped[str] = mapped_column(String(64))

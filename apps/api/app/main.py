@@ -12,8 +12,8 @@ from app.api.v1.routes import router
 from app.core.config import get_settings
 from app.core.errors import OpsAssistError
 from app.core.logging import configure_logging
+from app.core.observability import configure_observability
 from app.db.base import create_schema
-
 
 settings = get_settings()
 configure_logging()
@@ -22,9 +22,9 @@ logger = logging.getLogger("opsassist.api")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if settings.ai_mode not in {"offline", "ollama", "openai_compatible"}:
-        raise RuntimeError(f"Unsupported AI mode: {settings.ai_mode}")
-    create_schema()
+    settings.validate_production()
+    if settings.auto_create_schema:
+        create_schema()
     logger.info("startup complete", extra={"event_type": "system.ready"})
     yield
 
@@ -40,11 +40,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["Content-Type", "Authorization", "Idempotency-Key", "X-Request-ID"],
 )
 app.include_router(router, prefix=settings.api_prefix)
+configure_observability(app, settings)
 
 
 @app.middleware("http")

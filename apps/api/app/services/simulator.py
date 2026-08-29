@@ -5,7 +5,6 @@ from collections import deque
 
 from app.schemas.models import ActionRequest, ActionType, SimulationResult
 
-
 ACTION_EFFECT = {
     ActionType.ROLLBACK: (0.82, 0.78, 0.76, 140),
     ActionType.RESTART: (0.64, 0.52, 0.57, 85),
@@ -46,7 +45,8 @@ class DigitalTwin:
         if action.action_type not in ACTION_EFFECT:
             raise ValueError(f"Action {action.action_type} is not simulatable")
         base_probability, latency_gain, error_gain, downtime = ACTION_EFFECT[action.action_type]
-        rng = random.Random(seed)
+        # Deterministic counterfactual noise; this is not a security primitive.
+        rng = random.Random(seed)  # nosec B311
         topology_penalty = min(0.18, max(0, len(self.affected_services(action.target_service, edges)) - 1) * 0.025)
         jitter = rng.uniform(-0.025, 0.025)
         probability = max(0.05, min(0.98, base_probability + severity * 0.1 - topology_penalty + jitter))

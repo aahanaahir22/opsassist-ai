@@ -9,11 +9,10 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
 SECRET_PATTERN = re.compile(
     r"(?i)(authorization|api[_-]?key|password|token)\s*[=:]\s*[^\s,;]+"
 )
-VARIABLE_PATTERN = re.compile(r"\b(?:[0-9a-f]{8,}|\d+|[0-9a-f-]{36})\b", re.I)
+VARIABLE_PATTERN = re.compile(r"\b(?:[0-9a-f]{8,}|\d+|[0-9a-f-]{36})\b", re.IGNORECASE)
 
 
 @dataclass(slots=True)
@@ -40,7 +39,7 @@ class CorrelationService:
             CorrelatedEvent(
                 id=str(item["id"]),
                 service_id=str(item["service_id"]),
-                timestamp=datetime.fromisoformat(str(item["timestamp"]).replace("Z", "+00:00")),
+                timestamp=datetime.fromisoformat(str(item["timestamp"])),
                 message=self.normalize(str(item.get("message", ""))),
                 trace_id=item.get("trace_id"),
             )
@@ -75,7 +74,7 @@ class CorrelationService:
         np.fill_diagonal(feature_distance, 0)
         labels = DBSCAN(eps=eps, min_samples=1, metric="precomputed").fit_predict(feature_distance)
         clusters: list[dict[str, Any]] = []
-        for label in sorted(set(int(value) for value in labels)):
+        for label in sorted({int(value) for value in labels}):
             indices = [i for i, value in enumerate(labels) if int(value) == label]
             explanation = sorted({reason for (i, j), pair in reasons.items() if i in indices and j in indices for reason in pair})
             clusters.append({

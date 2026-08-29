@@ -17,10 +17,19 @@ dependencies = [
   "python-json-logger>=3.2,<4",
   "httpx>=0.28,<1",
   "python-multipart>=0.0.20,<1",
+  "PyJWT[crypto]>=2.10,<3",
+  "openai>=1.75,<2",
+  "redis>=5.2,<7",
+  "prometheus-client>=0.21,<1",
+  "sentry-sdk[fastapi]>=2.22,<3",
+  "opentelemetry-api>=1.30,<2",
+  "opentelemetry-sdk>=1.30,<2",
+  "opentelemetry-exporter-otlp-proto-http>=1.30,<2",
+  "opentelemetry-instrumentation-fastapi>=0.51b0,<1",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3,<9", "pytest-asyncio>=0.25,<1", "ruff>=0.9,<1", "mypy>=1.14,<2"]
+dev = ["pytest>=8.3,<9", "pytest-asyncio>=0.25,<1", "ruff>=0.9,<0.10", "mypy>=1.14,<2", "fakeredis>=2.26,<3", "pip-audit>=2.8,<3", "bandit>=1.8,<2"]
 semantic = ["sentence-transformers>=3.3,<4", "faiss-cpu>=1.9,<2"]
 
 [tool.hatch.build.targets.wheel]
@@ -38,6 +47,7 @@ target-version = "py312"
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
 warn_unused_ignores = true
+ignore_missing_imports = true
 
 [build-system]
 requires = ["hatchling"]

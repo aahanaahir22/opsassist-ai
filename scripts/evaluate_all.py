@@ -5,9 +5,7 @@ import subprocess
 from datetime import UTC, datetime
 from time import perf_counter
 
-from _bootstrap import ROOT  # noqa: F401
-from sklearn.metrics import adjusted_rand_score
-
+from _bootstrap import ROOT
 from app.core.errors import PolicyError
 from app.schemas.models import ActionRequest, ActionType, RankingComponents
 from app.services.anomaly import AnomalyService
@@ -16,6 +14,7 @@ from app.services.policy import PolicyEngine
 from app.services.ranking import RootCauseRanker
 from app.services.scenarios import ScenarioLoader
 from evaluate_retrieval import evaluate as evaluate_retrieval
+from sklearn.metrics import adjusted_rand_score
 
 
 def ratio(numerator: int, denominator: int) -> float:
@@ -76,7 +75,7 @@ def main() -> None:
     retrieval = evaluate_retrieval()
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    except Exception:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         commit = "uncommitted"
     report = {
         "dataset_version": "1.0.0",

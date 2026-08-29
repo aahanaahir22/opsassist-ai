@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 
-from _bootstrap import ROOT  # noqa: F401
-from app.core.config import get_settings
+from _bootstrap import ROOT
 from app.db.base import SessionLocal, create_schema
 from app.db.models import Service
 from app.services.scenarios import ScenarioLoader

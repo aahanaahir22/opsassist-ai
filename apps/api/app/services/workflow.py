@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.errors import NotFoundError, PolicyError
+from app.core.security import Principal
 from app.db.models import (
     Approval,
     AuditEvent,
@@ -42,23 +44,32 @@ from app.services.simulator import DigitalTwin
 
 
 class WorkflowService:
-    def __init__(self, session: Session, settings: Settings) -> None:
+    def __init__(self, session: Session, settings: Settings, principal: Principal) -> None:
         self.session = session
         self.settings = settings
+        self.principal = principal
+        self.tenant_id = principal.tenant_id
         self.scenarios = ScenarioLoader(Path(settings.data_dir) / "scenarios")
         self.anomaly = AnomalyService()
         self.ranker = RootCauseRanker()
         self.twin = DigitalTwin()
         self.policy = PolicyEngine(settings.approval_signing_key)
-        self.orchestrator = AgentOrchestrator()
+        self.orchestrator = AgentOrchestrator(settings)
+
+    def _incident(self, incident_id: str) -> Incident:
+        incident = self.session.scalar(select(Incident).where(Incident.id == incident_id, Incident.tenant_id == self.tenant_id))
+        if not incident:
+            raise NotFoundError("Incident", incident_id)
+        return incident
 
     def _audit(self, incident_id: str, event_type: str, actor: str, detail: dict) -> None:
-        self.session.add(AuditEvent(incident_id=incident_id, event_type=event_type, actor=actor, detail=detail))
+        self.session.add(AuditEvent(tenant_id=self.tenant_id, incident_id=incident_id, event_type=event_type, actor=actor, detail=detail))
 
     def create_incident(self, scenario_id: str, seed: int) -> IncidentDetail:
         scenario = self.scenarios.load(scenario_id)
         incident = Incident(
             id=f"inc_{uuid4().hex[:12]}",
+            tenant_id=self.tenant_id,
             scenario_id=scenario_id,
             title=scenario["manifest"].get("title", scenario_id.replace("_", " ").title()),
             status="OPEN",
@@ -68,21 +79,19 @@ class WorkflowService:
         )
         self.session.add(incident)
         self.session.flush()
-        self._audit(incident.id, "incident.created", "system", {"scenario_id": scenario_id, "seed": seed})
+        self._audit(incident.id, "incident.created", self.principal.subject, {"scenario_id": scenario_id, "seed": seed})
         self.session.commit()
         return self.detail(incident.id)
 
     def list_incidents(self) -> list[IncidentSummary]:
-        incidents = self.session.scalars(select(Incident).order_by(Incident.created_at.desc())).all()
+        incidents = self.session.scalars(select(Incident).where(Incident.tenant_id == self.tenant_id).order_by(Incident.created_at.desc())).all()
         return [IncidentSummary.model_validate(item) for item in incidents]
 
     def _record(self, incident: Incident) -> dict:
         return dict(incident.state or {})
 
     def detail(self, incident_id: str) -> IncidentDetail:
-        incident = self.session.get(Incident, incident_id)
-        if not incident:
-            raise NotFoundError("Incident", incident_id)
+        incident = self._incident(incident_id)
         state = self._record(incident)
         return IncidentDetail(
             **IncidentSummary.model_validate(incident).model_dump(),
@@ -94,9 +103,7 @@ class WorkflowService:
         )
 
     async def investigate(self, incident_id: str, publish) -> IncidentDetail:
-        incident = self.session.get(Incident, incident_id)
-        if not incident:
-            raise NotFoundError("Incident", incident_id)
+        incident = self._incident(incident_id)
         state = self._record(incident)
         scenario = state["scenario"]
         metrics = scenario["metrics"]
@@ -141,9 +148,7 @@ class WorkflowService:
         return self.detail(incident_id)
 
     def simulate_action(self, incident_id: str, action: ActionRequest) -> SimulationResult:
-        incident = self.session.get(Incident, incident_id)
-        if not incident:
-            raise NotFoundError("Incident", incident_id)
+        incident = self._incident(incident_id)
         self.policy.enforce_simulation(action)
         state = self._record(incident)
         if not state.get("hypotheses"):
@@ -176,7 +181,9 @@ class WorkflowService:
         return record
 
     def execute(self, incident_id: str, simulation_id: str, approval_id: str | None, idempotency_key: str) -> ExecutionResult:
-        existing = self.session.scalar(select(Execution).where(Execution.idempotency_key == idempotency_key))
+        self._incident(incident_id)
+        scoped_key = hashlib.sha256(f"{self.tenant_id}:{idempotency_key}".encode()).hexdigest()
+        existing = self.session.scalar(select(Execution).where(Execution.idempotency_key == scoped_key, Execution.incident_id == incident_id))
         if existing:
             return ExecutionResult(**existing.result)
         simulation = self.session.get(SimulationRun, simulation_id)
@@ -187,6 +194,9 @@ class WorkflowService:
             approval = self.session.get(Approval, approval_id) if approval_id else None
             if not approval or approval.simulation_id != simulation_id:
                 raise PolicyError("POLICY_APPROVAL_REQUIRED", "This action requires Incident Commander approval.", 403)
+            approval_record = ApprovalRecord.model_validate(approval)
+            if not self.policy.verify_approval(approval_record):
+                raise PolicyError("POLICY_INVALID_SIGNATURE", "The approval signature is invalid.", 403)
         now = datetime.now(UTC)
         probability = float(simulation.result["estimated_recovery_probability"])
         recovered_estimate = probability >= 0.7
@@ -210,17 +220,18 @@ class WorkflowService:
         )
         self.session.add(Execution(
             id=result.id, incident_id=incident_id, simulation_id=simulation_id,
-            idempotency_key=idempotency_key, state=result.state, result=result.model_dump(mode="json"),
+            idempotency_key=scoped_key, state=result.state, result=result.model_dump(mode="json"),
         ))
         self._audit(incident_id, "execution.completed", "simulator", result.model_dump(mode="json"))
         self.session.commit()
         return result
 
     def verify(self, incident_id: str, execution_id: str) -> VerificationResult:
+        self._incident(incident_id)
         execution = self.session.get(Execution, execution_id)
         if not execution or execution.incident_id != incident_id:
             raise NotFoundError("Execution", execution_id)
-        state = self._record(self.session.get(Incident, incident_id))
+        state = self._record(self._incident(incident_id))
         criteria = state["scenario"]["ground_truth"]["verification_criteria"]
         windows = execution.result.get("post_action_telemetry", [])
         checks = {
@@ -244,16 +255,14 @@ class WorkflowService:
             incident_id=incident_id, execution_id=execution_id,
             windows_observed=result.windows_observed, criteria=conditions, verified=verified,
         ))
-        incident = self.session.get(Incident, incident_id)
+        incident = self._incident(incident_id)
         incident.status = "VERIFIED" if verified else "FAILED"
         self._audit(incident_id, "incident.recovered" if verified else "verification.failed", "verification_agent", result.model_dump(mode="json"))
         self.session.commit()
         return result
 
     def postmortem(self, incident_id: str) -> PostmortemDocument:
-        incident = self.session.get(Incident, incident_id)
-        if not incident:
-            raise NotFoundError("Incident", incident_id)
+        incident = self._incident(incident_id)
         if incident.status != "VERIFIED":
             raise PolicyError("VERIFICATION_REQUIRED", "Recovery must be verified before postmortem generation.", 409)
         state = self._record(incident)
