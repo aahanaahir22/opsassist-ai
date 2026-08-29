@@ -2,7 +2,7 @@
 
 ## Service topology
 
-The intended Railway topology is `api`, PostgreSQL, Redis and `indexer`. The indexer owns a persistent `/indexes` volume and serves Sentence Transformer + FAISS retrieval over the private network. OTel Collector, Prometheus and Grafana can run as additional services from `infra/`.
+The intended Railway topology is `opsassist-api`, PostgreSQL, Redis, `opsassist-indexer`, `opsassist-otel`, `opsassist-prometheus` and `opsassist-grafana`. The indexer owns a persistent `/indexes` volume and serves Sentence Transformer + FAISS retrieval over the private network. The observability services use Railway's private DNS; only the API should be public by default.
 
 ## Release and migrations
 

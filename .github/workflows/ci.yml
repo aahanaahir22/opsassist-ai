@@ -73,6 +73,9 @@ jobs:
       - run: pip-audit --desc on
       - run: docker build -f apps/api/Dockerfile -t opsassist-api .
       - run: docker build -f apps/indexer/Dockerfile -t opsassist-indexer .
+      - run: docker build -f apps/otel/Dockerfile -t opsassist-otel .
+      - run: docker build -f apps/prometheus/Dockerfile -t opsassist-prometheus .
+      - run: docker build -f apps/grafana/Dockerfile -t opsassist-grafana .
       - run: docker build -f Dockerfile.web -t opsassist-web .
       - uses: aquasecurity/trivy-action@0.31.0
         with:
