@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "OpsAssist AI — Evidence-Backed Incident Intelligence",
   description: "Investigate synthetic incidents, inspect cited evidence, simulate remediations, approve safe actions and verify recovery.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+  other: { "codex-preview": "development" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
