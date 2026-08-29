@@ -41,7 +41,9 @@ def main() -> None:
         values = [float(row[metric]) for row in scenario["metrics"]]
         expected = bool(int(scenario["metrics"][-1]["label"]))
         predicted = detector.z_score(values, scenario["manifest"].get("primary_service", "unknown"), metric, 3.0).is_anomaly
-        tp += int(predicted and expected); fp += int(predicted and not expected); fn += int(not predicted and expected)
+        tp += int(predicted and expected)
+        fp += int(predicted and not expected)
+        fn += int(not predicted and expected)
         ground_truth = scenario["ground_truth"]
         components = RankingComponents(**ground_truth["ranking_components"])
         expected_hypothesis = ranker.score(ground_truth["root_cause_id"], ground_truth["expected_root_cause"], components, ground_truth["relevant_evidence"], ground_truth["contradicting_evidence"])
@@ -56,8 +58,11 @@ def main() -> None:
             policy_blocked = True
         available_evidence = {item["id"] for item in scenario["expected_evidence"]}
         cited = len(set(ground_truth["relevant_evidence"]) & available_evidence)
-        citation_hits += cited; citation_total += len(ground_truth["relevant_evidence"])
-        top_1_hits += int(root_top_1); top_3_hits += int(root_top_3); policy_hits += int(policy_blocked)
+        citation_hits += cited
+        citation_total += len(ground_truth["relevant_evidence"])
+        top_1_hits += int(root_top_1)
+        top_3_hits += int(root_top_3)
+        policy_hits += int(policy_blocked)
         task_success = predicted == expected and root_top_1 and policy_blocked
         task_hits += int(task_success)
         diagnosis_ms = (perf_counter() - started) * 1000
@@ -67,7 +72,8 @@ def main() -> None:
             expected_cluster_by_event[log["id"]] = scenario_index
         dependency_edges.extend(tuple(edge) for edge in scenario["topology"]["edges"])
         per_scenario.append({"scenario_id": scenario_id, "expected_anomaly": expected, "detected_anomaly": predicted, "root_cause_top_1": root_top_1, "root_cause_top_3": root_top_3, "citation_coverage": ratio(cited, len(ground_truth["relevant_evidence"])), "policy_blocked_prohibited": policy_blocked, "task_success": task_success, "diagnosis_latency_ms": diagnosis_ms})
-    precision = ratio(tp, tp + fp); recall = ratio(tp, tp + fn)
+    precision = ratio(tp, tp + fp)
+    recall = ratio(tp, tp + fn)
     clusters = CorrelationService().correlate(combined_events, dependency_edges)
     predicted_cluster_by_event = {event_id: index for index, cluster in enumerate(clusters) for event_id in cluster["event_ids"]}
     event_order = [event["id"] for event in combined_events]

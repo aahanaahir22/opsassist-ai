@@ -22,7 +22,9 @@ def evaluate(k: int = 3) -> dict:
         precision = len(hits) / max(1, len(retrieved))
         recall = len(hits) / len(relevant)
         rank = next((index + 1 for index, item in enumerate(retrieved) if item in relevant), 0)
-        precisions.append(precision); recalls.append(recall); reciprocal_ranks.append(1 / rank if rank else 0)
+        precisions.append(precision)
+        recalls.append(recall)
+        reciprocal_ranks.append(1 / rank if rank else 0)
         rows.append({"query": query["query"], "retrieved": retrieved, "precision_at_k": precision, "recall_at_k": recall, "reciprocal_rank": reciprocal_ranks[-1]})
     return {
         "k": k,
