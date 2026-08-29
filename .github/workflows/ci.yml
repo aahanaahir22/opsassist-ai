@@ -77,7 +77,7 @@ jobs:
       - run: docker build -f apps/prometheus/Dockerfile -t opsassist-prometheus .
       - run: docker build -f apps/grafana/Dockerfile -t opsassist-grafana .
       - run: docker build -f Dockerfile.web -t opsassist-web .
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297
         with:
           image-ref: opsassist-api
           severity: CRITICAL,HIGH
