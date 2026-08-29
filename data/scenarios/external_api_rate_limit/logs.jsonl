@@ -1,0 +1,2 @@
+{"id":"pay_log_1","service_id":"payment","timestamp":"2026-08-29T13:09:00Z","trace_id":"pay_t1","level":"WARN","message":"provider returned 429 retry-after=30"}
+{"id":"pay_log_2","service_id":"payment","timestamp":"2026-08-29T13:09:02Z","trace_id":"pay_t2","level":"ERROR","message":"retry budget exhausted provider status=429"}

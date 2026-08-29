@@ -1,0 +1,1 @@
+[{"id":"EV-PAY-1","kind":"log","label":"Provider 429 burst","source_id":"pay_log_1","timestamp":"2026-08-29T13:09:00Z","reliability":0.99,"stance":"supports","excerpt":"status=429 retry-after=30","explanation":"The dependency explicitly rejected excess requests."}]

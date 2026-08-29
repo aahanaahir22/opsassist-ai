@@ -1,31 +1,41 @@
 services:
-  database:
-    image: postgres:16-alpine
+  postgres:
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: opsassist
       POSTGRES_USER: opsassist
-      POSTGRES_PASSWORD: opsassist_local
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U opsassist"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      POSTGRES_PASSWORD: opsassist
     volumes:
-      - opsassist_pg:/var/lib/postgresql/data
-  backend:
-    build: ./backend
-    environment:
-      OPSASSIST_DATABASE_URL: postgresql+psycopg://opsassist:opsassist_local@database:5432/opsassist
-      OPSASSIST_CORS_ORIGINS: http://localhost:8080
-      OPSASSIST_SEED_DEMO: "true"
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opsassist -d opsassist"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
     depends_on:
-      database:
+      postgres:
         condition: service_healthy
     ports: ["8000:8000"]
-  frontend:
-    build: ./frontend
-    depends_on: [backend]
-    ports: ["8080:80"]
-volumes:
-  opsassist_pg:
+    volumes:
+      - ./data:/workspace/data
 
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_WS_URL: ws://localhost:8000/api/v1/events
+    depends_on:
+      api:
+        condition: service_healthy
+    ports: ["3000:3000"]
+
+volumes:
+  postgres-data:

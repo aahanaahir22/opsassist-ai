@@ -1,0 +1,1 @@
+[{"id":"EV-INV-1","kind":"metric","label":"Monotonic heap growth","source_id":"inventory.heap_used_mb","timestamp":"2026-08-29T11:14:00Z","reliability":0.97,"stance":"supports","excerpt":"410MB -> 951MB","explanation":"Heap rises without returning to baseline."}]

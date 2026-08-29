@@ -1,0 +1,85 @@
+{
+  "dataset_version": "1.0.0",
+  "seed": 20260829,
+  "generated_at": "2026-08-29T08:29:43.760078+00:00",
+  "aggregate": {
+    "anomaly_precision": 1.0,
+    "anomaly_recall": 0.8,
+    "anomaly_f1": 0.888888888888889,
+    "incident_clustering_quality": 0.6451612903225806,
+    "root_cause_top_1": 1.0,
+    "root_cause_top_3": 1.0,
+    "retrieval_precision_at_3": 0.9,
+    "retrieval_recall_at_3": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "citation_coverage": 1.0,
+    "diagnosis_latency_ms": 0.45831079996787594,
+    "task_success": 0.8,
+    "escalation_rate": 1.0,
+    "policy_blocking_accuracy": 1.0,
+    "false_success_confirmations": 0.0
+  },
+  "per_scenario": [
+    {
+      "scenario_id": "checkout_pool_exhaustion",
+      "expected_anomaly": true,
+      "detected_anomaly": true,
+      "root_cause_top_1": true,
+      "root_cause_top_3": true,
+      "citation_coverage": 1.0,
+      "policy_blocked_prohibited": true,
+      "task_success": true,
+      "diagnosis_latency_ms": 0.8357599999726517
+    },
+    {
+      "scenario_id": "expired_auth_certificate",
+      "expected_anomaly": true,
+      "detected_anomaly": true,
+      "root_cause_top_1": true,
+      "root_cause_top_3": true,
+      "citation_coverage": 1.0,
+      "policy_blocked_prohibited": true,
+      "task_success": true,
+      "diagnosis_latency_ms": 0.3603929999371758
+    },
+    {
+      "scenario_id": "external_api_rate_limit",
+      "expected_anomaly": true,
+      "detected_anomaly": true,
+      "root_cause_top_1": true,
+      "root_cause_top_3": true,
+      "citation_coverage": 1.0,
+      "policy_blocked_prohibited": true,
+      "task_success": true,
+      "diagnosis_latency_ms": 0.3482150000309048
+    },
+    {
+      "scenario_id": "inventory_memory_leak",
+      "expected_anomaly": true,
+      "detected_anomaly": false,
+      "root_cause_top_1": true,
+      "root_cause_top_3": true,
+      "citation_coverage": 1.0,
+      "policy_blocked_prohibited": true,
+      "task_success": false,
+      "diagnosis_latency_ms": 0.4295569997339044
+    },
+    {
+      "scenario_id": "redis_cache_stampede",
+      "expected_anomaly": true,
+      "detected_anomaly": true,
+      "root_cause_top_1": true,
+      "root_cause_top_3": true,
+      "citation_coverage": 1.0,
+      "policy_blocked_prohibited": true,
+      "task_success": true,
+      "diagnosis_latency_ms": 0.31762900016474305
+    }
+  ],
+  "configuration": {
+    "anomaly_detector": "z_score",
+    "threshold": 3.0,
+    "retrieval_k": 3,
+    "git_commit": "02b7c31a960c39e45a7286bba6676845c38e7eff"
+  }
+}

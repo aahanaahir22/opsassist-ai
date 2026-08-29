@@ -1,0 +1,6 @@
+id: checkout_pool_exhaustion
+title: Checkout connection-pool exhaustion
+version: 1.0.0
+primary_service: checkout
+synthetic: true
+seed: 847

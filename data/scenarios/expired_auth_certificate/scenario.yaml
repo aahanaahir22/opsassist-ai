@@ -1,0 +1,6 @@
+id: expired_auth_certificate
+title: Expired authentication certificate
+version: 1.0.0
+primary_service: auth
+synthetic: true
+seed: 211

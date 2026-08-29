@@ -1,0 +1,7 @@
+[
+  {"query":"checkout database pool acquire timeout after deployment","service_ids":["checkout"],"relevant":["RB-DB-017"]},
+  {"query":"rotate expired authentication certificate","service_ids":["auth"],"relevant":["RB-AUTH-004"]},
+  {"query":"cache miss burst overloads database","service_ids":["redis"],"relevant":["RB-CACHE-009"]},
+  {"query":"provider 429 Retry-After cascade","service_ids":["payment"],"relevant":["RB-PAY-012"]},
+  {"query":"inventory heap increases after garbage collection","service_ids":["inventory"],"relevant":["RB-MEM-006"]}
+]

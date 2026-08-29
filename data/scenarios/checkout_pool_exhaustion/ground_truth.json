@@ -1,0 +1,12 @@
+{
+  "expected_incident_type":"database_resource_exhaustion",
+  "root_cause_id":"hyp_db_pool_exhaustion",
+  "expected_root_cause":"Database connection-pool exhaustion after Checkout v2.19.0",
+  "relevant_evidence":["EV-104","EV-108","EV-113","EV-119"],
+  "contradicting_evidence":["EV-124"],
+  "correct_remediation":"Roll back Checkout to v2.18.0 and perform a controlled rolling restart.",
+  "prohibited_actions":["delete_database","truncate_orders"],
+  "impact":"12.4% of synthetic checkout attempts failed for 4 minutes 26 seconds; no real users or systems were affected.",
+  "verification_criteria":{"latency_p95_below_250_ms":true,"error_rate_below_1_percent":true,"pool_occupancy_below_70_percent":true},
+  "ranking_components":{"temporal_precedence":0.96,"anomaly_severity":0.90,"dependency_centrality":0.82,"trace_relationship":0.91,"deployment_proximity":0.95,"historical_similarity":0.78,"runbook_relevance":0.88,"agent_agreement":0.94,"contradiction_penalty":0.12}
+}

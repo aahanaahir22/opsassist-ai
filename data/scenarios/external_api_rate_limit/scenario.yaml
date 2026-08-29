@@ -1,0 +1,6 @@
+id: external_api_rate_limit
+title: External API rate-limit cascade
+version: 1.0.0
+primary_service: payment
+synthetic: true
+seed: 633

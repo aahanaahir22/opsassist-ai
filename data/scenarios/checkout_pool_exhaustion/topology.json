@@ -1,0 +1,1 @@
+{"nodes":["gateway","auth","checkout","payment","inventory","postgres","redis","queue","provider"],"edges":[["gateway","checkout"],["checkout","payment"],["checkout","inventory"],["checkout","postgres"],["checkout","redis"],["checkout","queue"],["payment","provider"]],"synthetic":true}

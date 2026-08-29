@@ -1,0 +1,4 @@
+{"id":"log_checkout_1","service_id":"checkout","timestamp":"2026-08-29T09:42:14Z","trace_id":"trace_8baf1","level":"WARN","message":"pool occupancy warning active=79 idle=21 max=100"}
+{"id":"log_checkout_2","service_id":"checkout","timestamp":"2026-08-29T09:43:12Z","trace_id":"trace_8baf1","level":"ERROR","message":"sqlalchemy.exc.TimeoutError: QueuePool limit reached active=98 idle=0 max=100"}
+{"id":"log_payment_1","service_id":"payment","timestamp":"2026-08-29T09:43:15Z","trace_id":"trace_8baf1","level":"ERROR","message":"checkout dependency timeout after 1000ms"}
+{"id":"log_provider_1","service_id":"provider","timestamp":"2026-08-29T09:43:18Z","trace_id":"trace_external_ok","level":"INFO","message":"provider response status=200 latency_ms=84"}

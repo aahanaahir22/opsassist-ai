@@ -1,0 +1,1 @@
+[{"id":"EV-REDIS-1","kind":"metric","label":"Cache miss-rate spike","source_id":"redis.miss_rate_pct","timestamp":"2026-08-29T12:20:00Z","reliability":0.98,"stance":"supports","excerpt":"miss rate 92%","explanation":"The cache stopped absorbing repeat reads before database load increased."}]

@@ -1,0 +1,10 @@
+.git
+node_modules
+.next
+dist
+.sites-runtime
+.venv
+__pycache__
+*.pyc
+*.db
+data/indexes
