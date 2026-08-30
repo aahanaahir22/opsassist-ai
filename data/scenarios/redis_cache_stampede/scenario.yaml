@@ -1,0 +1,6 @@
+id: redis_cache_stampede
+title: Redis cache stampede
+version: 1.0.0
+primary_service: redis
+synthetic: true
+seed: 512

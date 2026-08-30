@@ -1,0 +1,6 @@
+id: inventory_memory_leak
+title: Inventory Service memory leak
+version: 1.0.0
+primary_service: inventory
+synthetic: true
+seed: 389

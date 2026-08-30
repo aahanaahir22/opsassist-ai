@@ -1,0 +1,2 @@
+{"id":"auth_log_1","service_id":"auth","timestamp":"2026-08-29T10:01:00Z","trace_id":"auth_t1","level":"ERROR","message":"x509 certificate expired at 2026-08-29T10:00:00Z"}
+{"id":"gateway_log_1","service_id":"gateway","timestamp":"2026-08-29T10:01:04Z","trace_id":"auth_t1","level":"ERROR","message":"authentication upstream returned 503"}

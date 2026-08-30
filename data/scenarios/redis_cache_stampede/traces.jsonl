@@ -1,0 +1,2 @@
+{"id":"cache_span_1","trace_id":"cache_t1","span_id":"redis_get","parent_span_id":"checkout","service_id":"redis","timestamp":"2026-08-29T12:20:00Z","operation":"GET product-list","duration_ms":3}
+{"id":"cache_span_2","trace_id":"cache_t1","span_id":"db_query","parent_span_id":"checkout","service_id":"postgres","timestamp":"2026-08-29T12:20:00Z","operation":"SELECT products","duration_ms":619}

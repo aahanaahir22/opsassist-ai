@@ -1,31 +1,117 @@
 services:
-  database:
-    image: postgres:16-alpine
+  postgres:
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: opsassist
       POSTGRES_USER: opsassist
-      POSTGRES_PASSWORD: opsassist_local
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U opsassist"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      POSTGRES_PASSWORD: opsassist
     volumes:
-      - opsassist_pg:/var/lib/postgresql/data
-  backend:
-    build: ./backend
-    environment:
-      OPSASSIST_DATABASE_URL: postgresql+psycopg://opsassist:opsassist_local@database:5432/opsassist
-      OPSASSIST_CORS_ORIGINS: http://localhost:8080
-      OPSASSIST_SEED_DEMO: "true"
-    depends_on:
-      database:
-        condition: service_healthy
-    ports: ["8000:8000"]
-  frontend:
-    build: ./frontend
-    depends_on: [backend]
-    ports: ["8080:80"]
-volumes:
-  opsassist_pg:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opsassist -d opsassist"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  indexer:
+    build:
+      context: .
+      dockerfile: apps/indexer/Dockerfile
+    env_file: .env
+    environment:
+      OPSASSIST_EMBEDDING_BACKEND: sentence_transformer
+      OPSASSIST_INDEX_DIR: /indexes
+    volumes:
+      - faiss-indexes:/indexes
+    ports: ["8080:8080"]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      indexer:
+        condition: service_started
+    command: ["sh", "-c", "alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    ports: ["8000:8000"]
+    volumes:
+      - ./data:/workspace/data
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./infra/otel-collector.yaml:/etc/otel/config.yaml:ro
+    ports: ["4317:4317", "4318:4318", "8889:8889"]
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d"]
+    volumes:
+      - ./infra/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports: ["9090:9090"]
+    depends_on: [api, otel-collector]
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-me}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3001:3000"]
+    depends_on: [prometheus]
+
+  backup:
+    build:
+      context: .
+      dockerfile: apps/backup/Dockerfile
+    profiles: ["operations"]
+    environment:
+      DATABASE_URL: postgresql://opsassist:opsassist@postgres:5432/opsassist
+      BACKUP_DIR: /backups
+    volumes:
+      - backup-data:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_WS_URL: ws://localhost:8000/api/v1/events
+    depends_on:
+      api:
+        condition: service_healthy
+    ports: ["3000:3000"]
+
+volumes:
+  postgres-data:
+  redis-data:
+  faiss-indexes:
+  prometheus-data:
+  grafana-data:
+  backup-data:

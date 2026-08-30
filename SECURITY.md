@@ -1,20 +1,5 @@
-# Security policy
+# Security model
 
-## Supported scope
+OpsAssist AI is a portfolio simulator, not a production incident platform. It ships no production remediation connectors or credentials. The production profile validates Auth0 RS256 tokens against JWKS, requires an Organization tenant claim, enforces endpoint permissions, scopes persisted records by tenant, applies Redis-backed rate limits, and fails startup when required production configuration is incomplete. The policy layer fails closed for unknown and prohibited actions, verifies signed approvals, accepts tenant-scoped idempotency keys, redacts common secret patterns, blocks known prompt-injection phrases, records audit events, and prevents success confirmation before synthetic verification windows pass.
 
-This repository is a portfolio prototype and not a production incident-response product. Do not connect the simulator to real infrastructure without an independent security review.
-
-## Reporting
-
-Report security issues privately to `aahanaahir10@gmail.com`. Do not open a public issue containing credentials, internal logs, personal data, or an exploitable proof of concept.
-
-## Safe extension requirements
-
-- Keep infrastructure actions behind a strict allow-list.
-- Bind approvals to actor, action, target, expiry, and policy version.
-- Use least-privilege, short-lived credentials from a secret manager.
-- Strip secrets and personal data from telemetry and retrieved evidence.
-- Make audit storage append-only and independently integrity-checked.
-- Add authentication, authorization, rate limits, and tenant isolation.
-- Confirm post-action state through a separate read path.
-
+Do not send real customer telemetry, credentials, or confidential runbooks to the public demo. Report security issues privately to the repository owner rather than opening a public issue.

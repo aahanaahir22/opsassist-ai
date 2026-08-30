@@ -1,248 +1,167 @@
 # OpsAssist AI
 
-### Evidence-backed incident diagnosis and controlled remediation
+OpsAssist AI is an evidence-backed incident-investigation portfolio system. Its public interface visualizes a synthetic service universe, while a modular Python service performs numerical anomaly detection, event correlation, cited retrieval, typed agent orchestration, transparent root-cause scoring, counterfactual simulation, policy-gated execution, telemetry verification, and postmortem generation.
 
-[![CI](https://github.com/aahanaahir22/opsassist-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/aahanaahir22/opsassist-ai/actions/workflows/ci.yml)
+**Public demo:** https://opsassist-ai.aahanaahir12.chatgpt.site
 
-## [Launch the public interactive demo →](https://opsassist-ai-demo.aahanaahir12.chatgpt.site)
+> All public-demo infrastructure and telemetry are synthetic. Actions run only in the deterministic simulator. Recovery probabilities are estimates. This is a portfolio prototype, not a production incident-management product.
 
-The browser demo reproduces the safe incident workflow without requiring a local setup or production credentials: inspect FAISS evidence, approve the proposed action, execute the controlled simulator, verify observed recovery metrics, and review the resulting audit trail.
+## Thirty-second tour
 
-OpsAssist AI turns fragmented operational signals into a traceable incident decision. It groups related telemetry, retrieves approved runbook evidence with FAISS, produces a typed diagnosis and action plan, enforces a human approval gate for sensitive actions, simulates least-privilege execution, verifies observed state, and records the full audit trail.
+Launch the Checkout scenario, investigate it, open the evidence behind the leading hypothesis, compare score components, simulate a rollback, sign the required approval, execute only in the simulator, wait for three recovery windows, and export a cited postmortem. With no Python URL configured, the hosted UI remains available in clearly labelled offline-demo mode.
 
-> **Portfolio prototype:** all included incidents, metrics, identities, systems, and execution results are simulated. The executor never connects to production infrastructure.
+## What is real
 
-![OpsAssist AI command center](screenshots/01-command-center.png)
-
-![Verified test and execution evidence](screenshots/02-verified-execution.png)
-
-## Why this project exists
-
-Incident response is often slowed by logs, alerts, runbooks, and remediation decisions living in separate tools. Generic AI advice adds another risk when it cannot show evidence or control execution. OpsAssist AI demonstrates a safer alternative: recommendations are linked to versionable runbook sections, validated against an allow-list and confidence threshold, and blocked until the appropriate approval exists.
-
-## What the working demo proves
-
-- REST event ingestion with a 15-minute correlation window
-- Incident grouping by environment, service, and error code
-- Local TF-IDF embeddings searched through `faiss.IndexFlatIP`
-- Stable evidence IDs such as `RB-PAY-001#connection-pool-exhaustion`
-- Pydantic-validated action plans with target, risk, parameters, and evidence IDs
-- Explicit allow-list, confidence threshold, and sensitive-action policy
-- Named human approval before state-changing remediation
-- Least-privilege simulated executor with before/after state verification
-- Queryable audit history for grouping, diagnosis, approval, and execution
-- React + TypeScript command center connected to live FastAPI endpoints
-- SQLite zero-setup mode and PostgreSQL Docker mode
-- Automated backend tests and a frontend production build in GitHub Actions
+- FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, PostgreSQL with SQLite fallback, structured logs, OpenAPI and WebSockets.
+- Rolling Z-score, Isolation Forest, change-point and rate-of-change detectors with deterministic tests.
+- TF-IDF features plus DBSCAN, temporal/trace/service/dependency evidence and secret redaction for correlation.
+- Versioned chunks with exact citations, metadata/trust filters and injection detection. A dedicated Sentence Transformer + FAISS service atomically promotes persistent index versions; transparent TF-IDF remains the local no-download fallback.
+- Eleven independently invoked, schema-constrained OpenAI agents coordinated by an async state machine, with evidence-ID validation and typed partial fallback. Offline mode remains deterministic and reproducible.
+- Auth0 Universal Login and Organizations, RS256/JWKS token verification, endpoint permissions and database-enforced tenant filters. The public portfolio profile stays explicitly unauthenticated; the production profile fails closed when Auth0 is incomplete.
+- Configurable weighted root-cause ranking with contradiction penalties.
+- Deterministic graph-based estimates for rollback, restart, scaling, pool-size and integration-disable actions.
+- Backend policy enforcement, signed approvals, role checks, idempotent execution, immutable-style audit events and verification gates.
+- Five versioned scenario datasets and generated evaluation artifacts.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Telemetry events] --> B[FastAPI ingestion]
-    B --> C[Incident correlation]
-    C --> D[(PostgreSQL / SQLite)]
-    C --> E[FAISS runbook retrieval]
-    E --> F[Evidence-backed diagnosis]
-    F --> G{Policy gate}
-    G -->|Low risk| I[Controlled executor]
-    G -->|Sensitive| H[Human approval]
-    G -->|Denied| J[Human review]
-    H --> I
-    I --> K[Observed-state verification]
-    B --> L[Audit trail]
-    F --> L
-    H --> L
-    K --> L
+  UI["Next.js / Auth0 SPA"] -->|JWT · REST · WebSocket| API["FastAPI + RBAC"]
+  API --> CORE["Typed investigation agents"]
+  CORE --> DB[("PostgreSQL")]
+  CORE --> RAG["FAISS indexer"]
+  API --> REDIS["Redis limits"]
+  API --> SAFE["Policy + synthetic simulator"]
+  API --> OBS["OTel · Prometheus · Grafana"]
+  SAFE --> AUDIT["Signed approval · verification"]
 ```
 
-The detailed component responsibilities and trust boundaries are in [docs/architecture.md](docs/architecture.md).
+The frontend remains at repository root because moving it would break the existing Sites deployment contract. The Python application lives under `apps/api`.
 
-## Repository map
+## Incident lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> OPEN
+  OPEN --> INVESTIGATED: detect · correlate · retrieve
+  INVESTIGATED --> SIMULATED: estimate action
+  SIMULATED --> APPROVED: signed role approval
+  APPROVED --> EXECUTED: simulator only
+  EXECUTED --> VERIFYING: observe telemetry
+  VERIFYING --> VERIFIED: 3 passing windows
+  VERIFYING --> FAILED: criteria fail
+  VERIFIED --> POSTMORTEM
+```
+
+## Repository shape
 
 ```text
-opsassist-ai/
-├── .github/workflows/ci.yml       # backend tests + frontend build
-├── backend/
-│   ├── app/
-│   │   ├── data/runbooks/         # approved retrieval evidence
-│   │   ├── config.py              # environment-based settings
-│   │   ├── database.py            # SQLAlchemy engine/session
-│   │   ├── engine.py              # correlation, FAISS, diagnosis, policy, execution
-│   │   ├── main.py                # FastAPI routes and lifecycle
-│   │   ├── models.py              # incident/event/approval/audit entities
-│   │   ├── schemas.py             # typed API and action-plan contracts
-│   │   └── seed.py                # reproducible payment-timeout scenario
-│   ├── tests/                     # integration tests for the safety workflow
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/
-│   ├── src/main.tsx               # connected React command center
-│   ├── src/styles.css             # responsive visual system
-│   ├── Dockerfile
-│   ├── nginx.conf                 # SPA serving + API proxy
-│   └── package.json
-├── docs/                          # architecture, API, demo, decisions
-├── screenshots/                   # recruiter-verifiable execution evidence
-├── .env.example
-├── docker-compose.yml
-├── Makefile
-└── README.md
+app/                       existing visual frontend
+lib/                       typed browser API client
+apps/api/app/              FastAPI, schemas, database and services
+apps/api/migrations/       Alembic migration
+apps/api/tests/            backend and workflow tests
+apps/indexer/              persistent Sentence Transformer + FAISS service
+apps/backup/               PostgreSQL backup runner
+ai/                        package boundaries for AI/ML extensions
+simulator/                 package boundaries for twin extensions
+data/scenarios/            five reproducible incident datasets
+data/runbooks/             versioned knowledge documents
+data/evaluation/           queries and generated results
+scripts/                   index, seed and evaluation commands
+docs/                      architecture, API, RAG, safety and demo docs
+infra/                     OTel Collector, Prometheus alerts and Grafana dashboard
+.github/workflows/ci.yml   Python, frontend, containers and secret scan
 ```
 
-## Quick start - Docker
+## Local setup
 
-Prerequisites: Docker Desktop with Docker Compose.
+### Docker
 
 ```bash
-git clone https://github.com/aahanaahir22/opsassist-ai.git
-cd opsassist-ai
 cp .env.example .env
 docker compose up --build
 ```
 
-Open:
+The UI is available at `http://localhost:3000`; API docs are at `http://localhost:8000/docs`.
 
-- Dashboard: `http://localhost:8080`
-- Interactive API docs: `http://localhost:8000/docs`
-- Health endpoint: `http://localhost:8000/health`
-
-Docker runs PostgreSQL, FastAPI, and the production React build. The demo incident is seeded automatically on the first start.
-
-## Quick start - local development
-
-Prerequisites: Python 3.12+, Node.js 22+, and Git.
+### Without Docker
 
 ```bash
-git clone https://github.com/aahanaahir22/opsassist-ai.git
-cd opsassist-ai
-python -m venv .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -r backend/requirements-dev.txt
-cd frontend && npm install && cd ..
-```
-
-Terminal 1:
-
-```bash
+python3.12 -m venv .venv
 source .venv/bin/activate
-cd backend
-uvicorn app.main:app --reload --port 8000
+pip install -e 'apps/api[dev]'
+export PYTHONPATH="$PWD/apps/api"
+export OPSASSIST_DATA_DIR="$PWD/data"
+uvicorn app.main:app --app-dir apps/api --reload
 ```
 
-Terminal 2:
+In a second terminal:
 
 ```bash
-cd frontend
-npm run dev
+npm ci
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1 \
+NEXT_PUBLIC_WS_URL=ws://localhost:8000/api/v1/events npm run dev
 ```
 
-Open `http://localhost:5173`. SQLite is used automatically; PostgreSQL is not required for this route.
-
-## Reproduce the safety workflow
-
-Reset the deterministic incident:
+## Reproducible commands
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/demo/reset
+python scripts/build_index.py
+python scripts/evaluate_retrieval.py
+python scripts/seed_demo.py
+python scripts/evaluate_all.py
+pytest apps/api/tests -q
+npm run lint
+npx tsc --noEmit
+npm test
 ```
 
-The scenario groups three `DB_TIMEOUT` events for `payment-api`, retrieves payment database runbook evidence, proposes a rolling worker recycle at 0.88 confidence, and creates a pending approval.
-
-Trying to execute before approval returns HTTP `409`:
+For semantic embeddings and FAISS:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/incidents/INCIDENT_ID/execute
+OPSASSIST_EMBEDDING_BACKEND=sentence_transformer python scripts/build_index.py
 ```
 
-Approve using the ID from `GET /api/v1/approvals`:
+The default local TF-IDF index avoids a model download. The production Compose/Railway indexer uses `sentence-transformers/all-MiniLM-L6-v2`, writes a versioned FAISS artifact, validates its manifest and promotes it atomically through `current.json`. Generated indexes, databases and model caches are intentionally ignored; rebuild them from source.
+
+## Production profile
+
+The production-like topology is API + PostgreSQL + Redis + semantic indexer, with optional OTel Collector, Prometheus and Grafana services. Configure Auth0 Organizations and the OpenAI key as deployment secrets, then set:
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/approvals/APPROVAL_ID/decision \
-  -H "Content-Type: application/json" \
-  -d '{
-    "decision": "approved",
-    "decided_by": "on-call.engineer@example.com",
-    "reason": "Evidence and rolling safeguards verified."
-  }'
+OPSASSIST_ENVIRONMENT=production
+OPSASSIST_AUTO_CREATE_SCHEMA=false
+OPSASSIST_AUTH_REQUIRED=true
+OPSASSIST_AI_MODE=openai
 ```
 
-Then execute and inspect `GET /api/v1/audit?incident_id=INCIDENT_ID`. The executor returns a simulated verified state; it does not call Kubernetes, AWS, or any production target.
+Alembic must run as the pre-deploy release command before the API starts. See [docs/authentication.md](docs/authentication.md) and [docs/production-operations.md](docs/production-operations.md).
 
-## API surface
-
-| Method | Route | Purpose |
-| --- | --- | --- |
-| `GET` | `/health` | Readiness and execution-mode disclosure |
-| `POST` | `/api/v1/events` | Ingest one normalized telemetry event |
-| `GET` | `/api/v1/incidents` | List grouped incidents |
-| `GET` | `/api/v1/incidents/{id}` | Incident, evidence, action, and events |
-| `POST` | `/api/v1/incidents/{id}/analyze` | Re-run retrieval, diagnosis, and policy |
-| `GET` | `/api/v1/approvals` | List approval requests |
-| `POST` | `/api/v1/approvals/{id}/decision` | Approve or reject with identity and reason |
-| `POST` | `/api/v1/incidents/{id}/execute` | Run the policy-checked simulator |
-| `GET` | `/api/v1/audit` | Query traceable decisions |
-| `POST` | `/api/v1/demo/reset` | Restore the deterministic demo |
-
-See [docs/api.md](docs/api.md) for contracts and example payloads.
-
-## Validation
+## API example
 
 ```bash
-cd backend
-ruff check app tests
-pytest -q --cov=app --cov-report=term-missing
-
-cd ../frontend
-npm run build
+curl -s http://localhost:8000/api/v1/incidents/simulate \
+  -H 'content-type: application/json' \
+  -d '{"scenario_id":"checkout_pool_exhaustion","seed":847}'
 ```
 
-The repository includes integration coverage for grouping, evidence attachment, pre-approval blocking, approval, execution verification, audit completeness, and dashboard metrics. CI fails if backend coverage drops below 85% or the TypeScript production build fails.
+Connect to `ws://localhost:8000/api/v1/events?incident_id=inc_...` for events such as `agent.started`, `evidence.created`, `hypothesis.updated`, `simulation.completed`, `approval.recorded`, and `incident.recovered`.
 
-## Security choices
+## Methods and evaluation
 
-- No real infrastructure SDK or shell executor is included.
-- Sensitive actions require a stored, named approval.
-- Unknown actions and low-confidence diagnoses are denied.
-- Runbook excerpts carry stable evidence identifiers.
-- Optional `X-API-Key` protection is enabled by setting `OPSASSIST_API_KEY`.
-- Environment variables are excluded from Git; `.env.example` contains no secret.
-- This prototype audit table is traceable but not legally immutable. A production design should use append-only storage and external integrity controls.
+Root-cause scores are a normalized weighted sum of temporal precedence, anomaly severity, dependency centrality, trace relationships, deployment proximity, historical similarity, runbook relevance and agent agreement, multiplied by a contradiction penalty. The UI can display the returned components directly.
 
-Read [SECURITY.md](SECURITY.md) before extending the executor.
+Evaluation scripts compute anomaly precision/recall/F1 and retrieval Precision@K, Recall@K and MRR from checked-in files. The current compact benchmark is intentionally small; scores demonstrate reproducibility, not production validity. See [docs/evaluation.md](docs/evaluation.md).
 
-## Evaluation framework
+## Safety and limitations
 
-The repository deliberately avoids invented production results. A fair evaluation should measure:
+- No production infrastructure connector exists.
+- Remediation always targets the checked-in synthetic simulator. Auth0, PostgreSQL, Redis, OpenAI and telemetry integrations do not add a connector to customer infrastructure.
+- The datasets are compact and synthetic; evaluation numbers do not predict real-world SRE performance.
+- The agent state machine returns evidence summaries, not hidden chain-of-thought.
+- OpenAI mode requires an operator-supplied secret and emits schema-validated findings with exact evidence references. It falls back to a labelled partial offline result on provider failure.
+- Simulation is deterministic counterfactual estimation, not a production guarantee.
 
-| Dimension | Definition |
-| --- | --- |
-| Retrieval precision@k | Relevant runbook chunks among the top-k evidence results |
-| Evidence coverage | Diagnoses carrying at least one approved evidence ID |
-| Diagnostic accuracy | Root-cause label accuracy on a reviewed scenario set |
-| Policy compliance | Sensitive actions blocked until a valid approval exists |
-| API latency | p50/p95 time for ingestion, analysis, and audit reads |
-| End-to-end response | Event arrival to verified simulated outcome |
-
-## Engineering decisions
-
-- **Deterministic local diagnosis:** the demo is reproducible and needs no paid key. An LLM adapter can later be added behind the same typed plan contract.
-- **FAISS with TF-IDF vectors:** small, inspectable, CPU-only retrieval demonstrates the indexing path without a model download.
-- **SQLite plus PostgreSQL:** reviewers get a zero-setup path while Docker demonstrates a production-style relational dependency.
-- **Simulation by design:** the project demonstrates control-plane reasoning without creating an unsafe autonomous operations tool.
-
-## Roadmap
-
-- OpenTelemetry ingestion adapter and schema validation
-- PostgreSQL migrations with Alembic
-- Optional local/hosted LLM diagnosis adapter with structured outputs
-- Role-based approval scopes and expiring approvals
-- Append-only audit sink with hash chaining
-- Scenario benchmark for retrieval and diagnostic evaluation
-- AWS ECS deployment and CloudWatch telemetry in a sandbox account
-
-## Author
-
-**Aahana Ahir** - B.Tech Computer Science and Engineering, VIT Bhopal University (2027)
-
-[LinkedIn](https://www.linkedin.com/in/aahanaahir02/) · [Email](mailto:aahanaahir10@gmail.com)
+See [docs/safety.md](docs/safety.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -1,0 +1,7 @@
+[
+  {"id":"EV-104","kind":"metric","label":"Pool occupancy 98%","source_id":"postgres.pool.used","timestamp":"2026-08-29T09:43:01Z","reliability":0.99,"stance":"supports","excerpt":"active=98 idle=0 max=100","explanation":"Saturation begins before downstream timeouts."},
+  {"id":"EV-108","kind":"deployment","label":"Checkout deployment dpl_7f2","source_id":"dpl_7f2","timestamp":"2026-08-29T09:38:44Z","reliability":1.0,"stance":"supports","excerpt":"checkout:v2.18.0 -> v2.19.0","explanation":"The anomaly follows the only relevant change."},
+  {"id":"EV-113","kind":"trace","label":"Database acquire wait 711ms","source_id":"trace_8baf1/span_2","timestamp":"2026-08-29T09:43:06Z","reliability":0.96,"stance":"supports","excerpt":"db.pool.acquire 711ms; payment.call 82ms","explanation":"The trace localizes latency before the provider call."},
+  {"id":"EV-119","kind":"log","label":"Timeout acquiring connection","source_id":"log_checkout_2","timestamp":"2026-08-29T09:43:12Z","reliability":0.94,"stance":"supports","excerpt":"QueuePool limit reached","explanation":"The log template directly matches the pool hypothesis."},
+  {"id":"EV-124","kind":"provider","label":"External API nominal","source_id":"log_provider_1","timestamp":"2026-08-29T09:43:18Z","reliability":0.91,"stance":"contradicts","excerpt":"status=200 latency_ms=84","explanation":"This weakens the provider-outage hypothesis."}
+]

@@ -1,0 +1,17 @@
+groups:
+  - name: opsassist
+    rules:
+      - alert: OpsAssistHighErrorRate
+        expr: sum(rate(opsassist_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(opsassist_http_requests_total[5m])), 0.001) > 0.05
+        for: 10m
+        labels: { severity: page }
+        annotations: { summary: "OpsAssist API 5xx rate exceeds 5%" }
+      - alert: OpsAssistHighP95Latency
+        expr: histogram_quantile(0.95, sum(rate(opsassist_http_request_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 10m
+        labels: { severity: ticket }
+        annotations: { summary: "OpsAssist API p95 latency exceeds one second" }
+      - alert: OpsAssistAgentFailures
+        expr: increase(opsassist_agent_failures_total[15m]) > 3
+        labels: { severity: ticket }
+        annotations: { summary: "Repeated typed-agent provider failures" }

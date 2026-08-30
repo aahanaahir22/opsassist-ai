@@ -1,0 +1,1 @@
+{"id":"pay_span_1","trace_id":"pay_t1","span_id":"provider","parent_span_id":"payment","service_id":"provider","timestamp":"2026-08-29T13:09:00Z","operation":"POST authorize","duration_ms":94}

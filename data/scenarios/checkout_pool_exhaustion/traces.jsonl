@@ -1,0 +1,3 @@
+{"id":"span_1","trace_id":"trace_8baf1","span_id":"checkout","parent_span_id":null,"service_id":"checkout","timestamp":"2026-08-29T09:43:06Z","operation":"POST /checkout","duration_ms":934}
+{"id":"span_2","trace_id":"trace_8baf1","span_id":"db_wait","parent_span_id":"checkout","service_id":"postgres","timestamp":"2026-08-29T09:43:06Z","operation":"db.pool.acquire","duration_ms":711}
+{"id":"span_3","trace_id":"trace_8baf1","span_id":"payment_call","parent_span_id":"checkout","service_id":"payment","timestamp":"2026-08-29T09:43:06Z","operation":"payment.authorize","duration_ms":82}

@@ -1,0 +1,2 @@
+{"id":"inv_log_1","service_id":"inventory","timestamp":"2026-08-29T11:14:00Z","trace_id":"inv_t1","level":"WARN","message":"heap usage 93 percent; garbage collection pause 842ms"}
+{"id":"inv_log_2","service_id":"inventory","timestamp":"2026-08-29T11:15:00Z","trace_id":"inv_t2","level":"ERROR","message":"container terminated reason=OOMKilled"}

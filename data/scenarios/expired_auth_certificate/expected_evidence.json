@@ -1,0 +1,1 @@
+[{"id":"EV-AUTH-1","kind":"log","label":"Certificate expired","source_id":"auth_log_1","timestamp":"2026-08-29T10:01:00Z","reliability":0.99,"stance":"supports","excerpt":"x509 certificate expired","explanation":"The local verifier reports expiry before authentication failures."}]

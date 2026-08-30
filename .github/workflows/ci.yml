@@ -1,36 +1,91 @@
-name: ci
+name: CI
+
 on:
   push:
-    branches: [main]
   pull_request:
+
 jobs:
   backend:
     runs-on: ubuntu-latest
-    env:
-      PYTHONPATH: .
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - run: pip install -r requirements-dev.txt
-      - run: ruff check app tests
-      - run: pytest -q --cov=app --cov-fail-under=85
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e 'apps/api[dev]'
+      - run: ruff check apps/api/app apps/api/tests scripts
+      - run: mypy apps/api/app
+      - name: Verify production migrations
+        run: |
+          export OPSASSIST_DATABASE_URL=sqlite:///$RUNNER_TEMP/alembic.db
+          (cd apps/api && alembic -c alembic.ini upgrade head)
+          (cd apps/api && alembic -c alembic.ini upgrade head)
+      - run: python scripts/build_index.py
+      - run: python scripts/evaluate_retrieval.py
+      - run: pytest apps/api/tests -q
+
   frontend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+        with: { node-version: "22", cache: npm }
       - run: npm ci
-      - run: npm run build
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+
+  browser-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm }
+      - run: pip install -e apps/api
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report, retention-days: 14 }
+
+  load-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e apps/api
+      - run: PYTHONPATH=apps/api OPSASSIST_DATA_DIR=$PWD/data uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+      - run: |
+          for attempt in {1..30}; do curl -fsS http://127.0.0.1:8000/api/v1/health && exit 0; sleep 1; done
+          exit 1
+      - uses: grafana/setup-k6-action@v1
+      - run: k6 run --vus 5 --duration 10s tests/load/api-workflow.js
+
+  containers-and-security:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - run: python -m venv "$RUNNER_TEMP/opsassist-audit"
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip" install --upgrade pip setuptools wheel
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip" install -e 'apps/api[dev]'
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/bandit" -r apps/api/app -q
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip-audit" --local --desc off
+      - run: docker build -f apps/api/Dockerfile -t opsassist-api .
+      - run: docker build -f apps/indexer/Dockerfile -t opsassist-indexer .
+      - run: docker build -f apps/otel/Dockerfile -t opsassist-otel .
+      - run: docker build -f apps/prometheus/Dockerfile -t opsassist-prometheus .
+      - run: docker build -f apps/grafana/Dockerfile -t opsassist-grafana .
+      - run: docker build -f Dockerfile.web -t opsassist-web .
+      - uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297
+        with:
+          image-ref: opsassist-api
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true

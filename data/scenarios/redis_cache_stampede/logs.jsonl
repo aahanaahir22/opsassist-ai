@@ -1,0 +1,2 @@
+{"id":"redis_log_1","service_id":"redis","timestamp":"2026-08-29T12:20:00Z","trace_id":"cache_t1","level":"WARN","message":"cache miss burst key=product-list requests=4200"}
+{"id":"db_log_1","service_id":"postgres","timestamp":"2026-08-29T12:20:03Z","trace_id":"cache_t1","level":"WARN","message":"query concurrency exceeded 180"}

@@ -1,0 +1,1 @@
+{"id":"inv_span_1","trace_id":"inv_t1","span_id":"reserve","parent_span_id":null,"service_id":"inventory","timestamp":"2026-08-29T11:14:00Z","operation":"reserve_stock","duration_ms":1112}
