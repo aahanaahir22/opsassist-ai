@@ -362,7 +362,7 @@ body {
   width: min(63vw, 940px);
   height: 88vh;
   pointer-events: none;
-  background: url('/art/incident-reactor.png') center / contain no-repeat;
+  background: url('/opsassist-ai/art/incident-reactor.png') center / contain no-repeat;
   filter: drop-shadow(0 42px 46px rgba(81, 20, 97, .24));
   transform-origin: 54% 58%;
   animation: reactor-pop 1.35s cubic-bezier(.16,1.35,.25,1) both, reactor-float 6s 1.35s ease-in-out infinite;
@@ -469,7 +469,7 @@ body {
   width:230px;
   height:230px;
   pointer-events:none;
-  background:url('/art/incident-reactor.png') center/contain no-repeat;
+  background:url('/opsassist-ai/art/incident-reactor.png') center/contain no-repeat;
   filter:drop-shadow(0 25px 22px rgba(24,6,40,.35));
   animation:mission-pop 1s .25s cubic-bezier(.14,1.5,.3,1) both, reactor-float 6s 1.2s ease-in-out infinite;
 }
@@ -516,7 +516,7 @@ body {
 
 /* Generated evidence sculpture physically erupts behind the causal graph. */
 .constellation { overflow:hidden; min-height:680px; border:3px solid #2a103e; background:radial-gradient(circle at 50% 52%,#fff 0 10%,#e9dbff 36%,#ffcfe0 72%,#fff3b5 100%);box-shadow:12px 14px 0 #7b31ee }
-.constellation::after { content:"";position:absolute;z-index:1;inset:5% 27%;pointer-events:none;background:url('/art/evidence-prism.png') center/contain no-repeat;filter:drop-shadow(0 30px 30px rgba(63,20,84,.25));opacity:.56;animation:prism-pop 1s .2s cubic-bezier(.12,1.5,.25,1) both,prism-orbit 14s 1.2s ease-in-out infinite }
+.constellation::after { content:"";position:absolute;z-index:1;inset:5% 27%;pointer-events:none;background:url('/opsassist-ai/art/evidence-prism.png') center/contain no-repeat;filter:drop-shadow(0 30px 30px rgba(63,20,84,.25));opacity:.56;animation:prism-pop 1s .2s cubic-bezier(.12,1.5,.25,1) both,prism-orbit 14s 1.2s ease-in-out infinite }
 @keyframes prism-pop{from{opacity:0;transform:scale(.1) rotate(-90deg)}to{opacity:.56;transform:scale(1) rotate(0)}}
 @keyframes prism-orbit{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(4deg) scale(1.07)}}
 .constellation-lines{z-index:2}.hypothesis-core{z-index:4;border:3px solid #2a103e;background:#d8ff4f;box-shadow:8px 9px 0 #ff3d72}.hypothesis-core>span{color:#5f276e}.hypothesis-core>svg,.hypothesis-core b{color:#7b31ee}.evidence-node{z-index:5;color:#2a103e;border:2px solid #2a103e;background:rgba(255,255,255,.9);box-shadow:5px 6px 0 #2a103e}.evidence-node:hover{border-color:#2a103e;box-shadow:9px 11px 0 #ff3d72;transform:translateY(-8px) rotate(-1deg)}.evidence-node.contradict{border-color:#2a103e;background:#ffc5d6}.evidence-node>span,.evidence-node>i{color:#693d76}.constellation-note{z-index:6;color:#573169}
