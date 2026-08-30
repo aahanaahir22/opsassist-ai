@@ -137,7 +137,7 @@ OPSASSIST_AUTH_REQUIRED=true
 OPSASSIST_AI_MODE=openai
 ```
 
-Alembic must run as the pre-deploy release command before the API starts. See [docs/authentication.md](docs/authentication.md) and [docs/production-operations.md](docs/production-operations.md).
+Alembic must succeed before Uvicorn starts. Railway currently enforces this as a single-replica container startup gate because its pre-deploy phase could not reach the private database; larger deployments should move the same command to a serialized release job. See [docs/authentication.md](docs/authentication.md) and [docs/production-operations.md](docs/production-operations.md).
 
 ## API example
 
