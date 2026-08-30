@@ -6,14 +6,13 @@ The intended Railway topology is `opsassist-api`, PostgreSQL, Redis, `opsassist-
 
 ## Release and migrations
 
-The API release command is:
+The API must gate process startup on an Alembic upgrade:
 
 ```bash
-cd /workspace/apps/api
-python -m alembic -c alembic.ini upgrade head
+sh -c 'cd /workspace/apps/api && python -m alembic -c alembic.ini upgrade head && exec uvicorn app.main:app --app-dir /workspace/apps/api --host 0.0.0.0 --port 8000'
 ```
 
-Production sets `OPSASSIST_AUTO_CREATE_SCHEMA=false`; application startup never substitutes for migrations. CI upgrades an empty database to head twice to prove idempotence.
+Railway runs this inside the application container so private database networking is available. Uvicorn never starts if the migration fails. Production sets `OPSASSIST_AUTO_CREATE_SCHEMA=false`; `Base.metadata.create_all()` never substitutes for migrations. Keep the API at one replica while using this startup gate, or move the same Alembic command to a serialized release job before scaling horizontally. CI upgrades an empty database to head twice to prove idempotence.
 
 ## Backups and restore drills
 
