@@ -1086,13 +1086,11 @@ function OpsAssistApp() {
   return (
     <div className={`ops-shell ${reducedMotion ? "reduce-ops-motion" : ""}`}>
       <Toaster position="bottom-right" theme="dark" />
-      <AnimatePresence>
-        {showEntry && (
+      {showEntry && (
           <motion.section
             className="entry-screen"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.03 }}
           >
             <div className="entry-canvas">
               <Universe
@@ -1179,8 +1177,7 @@ function OpsAssistApp() {
               </span>
             </div>
           </motion.section>
-        )}
-      </AnimatePresence>
+      )}
 
       <header className="topbar">
         <button
