@@ -72,9 +72,11 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: gitleaks/gitleaks-action@v2
         env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
-      - run: pip install -e 'apps/api[dev]'
-      - run: bandit -r apps/api/app -q
-      - run: pip-audit --desc on
+      - run: python -m venv "$RUNNER_TEMP/opsassist-audit"
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip" install --upgrade pip setuptools wheel
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip" install -e 'apps/api[dev]'
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/bandit" -r apps/api/app -q
+      - run: "$RUNNER_TEMP/opsassist-audit/bin/pip-audit" --local --desc off
       - run: docker build -f apps/api/Dockerfile -t opsassist-api .
       - run: docker build -f apps/indexer/Dockerfile -t opsassist-indexer .
       - run: docker build -f apps/otel/Dockerfile -t opsassist-otel .
