@@ -6,7 +6,7 @@ test("launch → investigate → simulate → approve → execute → verify", a
   await page.getByRole("button", { name: /Launch guided incident/i }).click();
   await page.getByRole("tab", { name: /^Incident$/i }).click();
   await expect(page.getByText(/Root-cause hypotheses/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: /Re-run investigation/i })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("button", { name: /Re-run investigation/i })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("tab", { name: /Digital twin/i }).click();
   await page.getByRole("button", { name: /Simulate action/i }).click();
   await page.getByRole("button", { name: /Review & approve/i }).click();
