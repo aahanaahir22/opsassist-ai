@@ -2,7 +2,7 @@
 
 OpsAssist AI is an evidence-backed incident-investigation portfolio system. Its public interface visualizes a synthetic service universe, while a modular Python service performs numerical anomaly detection, event correlation, cited retrieval, typed agent orchestration, transparent root-cause scoring, counterfactual simulation, policy-gated execution, telemetry verification, and postmortem generation.
 
-**Public demo:** https://opsassist-ai.aahanaahir12.chatgpt.site
+**Public demo:** https://aahanaahir22.github.io/opsassist-ai/
 
 > All public-demo infrastructure and telemetry are synthetic. Actions run only in the deterministic simulator. Recovery probabilities are estimates. This is a portfolio prototype, not a production incident-management product.
 
